@@ -1,0 +1,45 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>dev.gaphunter.ratelimiterfallbackcompanion</id>
+    <name>Rate Limiter Fallback Companion</name>
+    <vendor>Gap Hunter Labs</vendor>
+    <description><![CDATA[
+        <p>Gutter warning icon on any Java/Kotlin method annotated with
+        a Resilience4j resilience annotation
+        (<code>@RateLimiter</code>, <code>@CircuitBreaker</code>,
+        <code>@Retry</code>, <code>@Bulkhead</code>,
+        <code>@TimeLimiter</code>) whose
+        <code>fallbackMethod = "name"</code> doesn't match any method
+        in the enclosing class -- a real, silent footgun: nothing fails
+        at compile time, but Resilience4j throws at runtime the first
+        time the fallback is actually triggered (rate limited, circuit
+        open, retry exhausted), which can be a rare code path that
+        isn't exercised until production.</p>
+        <p><b>100% static text/PSI analysis</b> -- matches the
+        annotation and the referenced method name by simple text, so
+        it works whether the real Resilience4j jar is on the classpath
+        or not. Java and Kotlin.</p>
+        <p>Stated honestly: v0.1 only checks that a method with the
+        given <i>name</i> exists somewhere in the class -- it doesn't
+        validate the fallback's parameter/return-type signature
+        actually matches what Resilience4j requires. A wrong-signature
+        fallback with the right name isn't covered (yet).</p>
+        <p>Free. No license nags, no telemetry, no network calls.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
+
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK1="true" supportsK2="true"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language="JAVA"
+            implementationClass="dev.gaphunter.ratelimiterfallbackcompanion.gutter.MissingFallbackMethodLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="kotlin"
+            implementationClass="dev.gaphunter.ratelimiterfallbackcompanion.gutter.MissingFallbackMethodLineMarkerProvider"/>
+        <notificationGroup id="Rate Limiter Fallback Companion" displayType="BALLOON"/>
+    </extensions>
+</idea-plugin>
